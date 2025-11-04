@@ -1,11 +1,12 @@
 """
-Monolithic Architecture Example: Todo Manager (Test-Driven Development)
-======================================================================
+Monolithic Architecture Example: Todo Manager (Test-Driven Development) - SOLUTION
+=================================================================================
 
-This is a Test-Driven Development (TDD) exercise demonstrating monolithic architecture.
-Your task is to make all the tests pass by implementing the required functions.
+This is the complete solution that passes all tests, demonstrating both:
+1. Monolithic architecture characteristics
+2. Test-driven development best practices
 
-ARCHITECTURAL CHARACTERISTICS:
+ARCHITECTURAL CHARACTERISTICS DEMONSTRATED:
 - Single file/module containing all functionality
 - Direct access to global data structures
 - Simple procedural programming approach
@@ -13,18 +14,12 @@ ARCHITECTURAL CHARACTERISTICS:
 - Easy to understand and develop initially
 - Single point of deployment
 
-TDD APPROACH:
-1. Read and understand the tests (they define the requirements)
-2. Run the tests (they will fail initially)
-3. Implement just enough code to make tests pass
-4. Refactor if needed
-5. Repeat until all tests pass
-
-LEARNING OBJECTIVES:
-- Understand monolithic architecture characteristics
-- Practice Test-Driven Development
-- Learn Python unit testing best practices
-- See how tests can drive design and requirements
+TDD LESSONS LEARNED:
+- Tests drive the design and requirements
+- Tests provide immediate feedback
+- Tests document expected behavior
+- Tests prevent regressions
+- Red-Green-Refactor cycle
 """
 
 import unittest
@@ -35,62 +30,113 @@ import sys
 tasks = []
 
 
-# --- Core Functions (TO BE IMPLEMENTED) ---
-# Your job is to implement these functions to make the tests pass
+# --- Core Functions (IMPLEMENTED TO PASS TESTS) ---
 
 def add_task(description, priority):
     """
-    TODO: Implement this function to make the tests pass.
+    Adds a new task to the global tasks list.
 
-    The tests will tell you exactly what this function should do.
-    Look at test_add_task() to understand the requirements.
+    Implementation driven by test requirements:
+    - Must generate unique, sequential IDs
+    - Must create task with correct structure
+    - Must return success message
     """
-    pass
+    task_id = len(tasks) + 1  # Simple sequential ID generation
+
+    task = {
+        "id": task_id,
+        "description": description,
+        "priority": priority,
+        "completed": False
+    }
+
+    tasks.append(task)
+    return f"Task {task_id} added successfully!"
 
 
 def list_all_tasks():
     """
-    TODO: Implement this function to make the tests pass.
+    Returns all tasks sorted by priority.
 
-    Look at test_list_all_tasks() to understand the requirements.
+    Implementation driven by test requirements:
+    - Must return empty list when no tasks
+    - Must sort by priority (ascending)
+    - Must return actual task objects
     """
-    pass
+    if not tasks:
+        return []
+
+    # Sort by priority (1 = highest, 5 = lowest)
+    return sorted(tasks, key=lambda task: task["priority"])
 
 
 def mark_task_done(task_id):
     """
-    TODO: Implement this function to make the tests pass.
+    Marks a task as completed.
 
-    Look at test_mark_task_done() to understand the requirements.
+    Implementation driven by test requirements:
+    - Must find task by ID
+    - Must set completed = True
+    - Must return appropriate messages
+    - Must handle non-existent tasks
     """
-    pass
+    task = get_task_by_id(task_id)
+
+    if task is None:
+        return f"Task {task_id} not found!"
+
+    if task["completed"]:
+        return f"Task {task_id} is already completed!"
+
+    task["completed"] = True
+    return f"Task {task_id} marked as completed!"
 
 
 def remove_task(task_id):
     """
-    TODO: Implement this function to make the tests pass.
+    Removes a task from the global tasks list.
 
-    Look at test_remove_task() to understand the requirements.
+    Implementation driven by test requirements:
+    - Must remove task with matching ID
+    - Must handle non-existent tasks
+    - Must return appropriate messages
     """
-    pass
+    global tasks
+
+    original_length = len(tasks)
+    tasks = [task for task in tasks if task["id"] != task_id]
+
+    if len(tasks) < original_length:
+        return f"Task {task_id} removed successfully!"
+    else:
+        return f"Task {task_id} not found!"
 
 
 def get_task_by_id(task_id):
     """
-    TODO: Implement this helper function to make the tests pass.
+    Helper function to find a task by ID.
 
-    Look at test_get_task_by_id() to understand the requirements.
+    Implementation driven by test requirements:
+    - Must return task object if found
+    - Must return None if not found
+    - Used by other functions for DRY principle
     """
-    pass
+    for task in tasks:
+        if task["id"] == task_id:
+            return task
+    return None
 
 
 def clear_all_tasks():
     """
-    TODO: Implement this function to make the tests pass.
+    Removes all tasks from the global list.
 
-    This is used for testing - it should remove all tasks.
+    Implementation driven by test requirements:
+    - Needed for test isolation
+    - Must completely empty the tasks list
     """
-    pass
+    global tasks
+    tasks.clear()
 
 
 # --- Test Suite ---
@@ -354,7 +400,7 @@ def run_tests():
     print("=" * 60)
     print()
     print("These tests define exactly what your functions should do.")
-    print("Implement the functions to make these tests pass!")
+    print("All tests should pass in this solution file!")
     print()
 
     # Capture test output
@@ -368,56 +414,111 @@ def run_tests():
     print("\n" + "=" * 60)
     if result.wasSuccessful():
         print("🎉 Congratulations! All tests pass!")
-        print("Your monolithic architecture implementation is complete!")
+        print("This demonstrates a complete monolithic architecture implementation!")
+        print()
+        print("🏗️  Monolithic Architecture Characteristics Demonstrated:")
+        print("✅ Single file with all functionality")
+        print("✅ Global data structures (tasks list)")
+        print("✅ Direct function calls and tight coupling")
+        print("✅ Simple procedural programming")
+        print("✅ Easy to understand and develop")
+        print("✅ Single deployment unit")
     else:
         print(f"❌ {len(result.failures)} test(s) failed, {len(result.errors)} error(s)")
-        print()
-        print("💡 Tips for success:")
-        print("1. Read the test names and assertions carefully")
-        print("2. Implement one function at a time")
-        print("3. Run tests frequently to get immediate feedback")
-        print("4. Look at the test setup and expected return values")
-        print()
-        print("Start with the simplest functions like clear_all_tasks() and add_task()")
+        print("This shouldn't happen in the solution file!")
 
     return result.wasSuccessful()
 
 
-# --- Simple Demo Functions ---
-def demo_tdd_process():
+# --- Interactive Demo Functions ---
+def display_tasks():
+    """Display all tasks in a user-friendly format."""
+    all_tasks = list_all_tasks()
+
+    if not all_tasks:
+        print("\n📝 No tasks available!")
+        return
+
+    print(f"\n📋 Todo List ({len(all_tasks)} task(s)):")
+    print("-" * 65)
+
+    for task in all_tasks:
+        status_icon = "✅" if task["completed"] else "❌"
+        priority_icon = ["🔴", "🟠", "🟡", "🟢", "🔵"][task["priority"] - 1]
+
+        print(f"{status_icon} [{task['id']:2d}] {task['description']:<35} "
+              f"{priority_icon} P{task['priority']}")
+
+    print("-" * 65)
+
+
+def interactive_demo():
     """
-    Demonstrate the TDD process for educational purposes.
+    Interactive demo showing the monolithic architecture in action.
     """
-    print("📚 Test-Driven Development (TDD) Process:")
-    print("1. 🔴 RED: Write a test that fails")
-    print("2. 🟢 GREEN: Write minimal code to make it pass")
-    print("3. 🔵 REFACTOR: Improve the code while keeping tests green")
-    print("4. Repeat!")
-    print()
-    print("In this exercise:")
-    print("- Tests are already written (they define requirements)")
-    print("- Your job is to make them pass")
-    print("- Tests give you immediate feedback")
-    print("- Tests document expected behavior")
-    print()
+    print("🚀 Interactive Demo - Monolithic Todo Manager")
+    print("=" * 50)
+
+    clear_all_tasks()
+
+    # Add some sample tasks
+    print("\n1. Adding sample tasks...")
+    print(add_task("Learn Python", 1))
+    print(add_task("Build a project", 2))
+    print(add_task("Deploy to production", 3))
+    print(add_task("Write documentation", 2))
+
+    # Show all tasks
+    print("\n2. Listing all tasks (sorted by priority):")
+    display_tasks()
+
+    # Mark one as done
+    print("\n3. Marking 'Learn Python' as completed...")
+    print(mark_task_done(1))
+    display_tasks()
+
+    # Remove a task
+    print("\n4. Removing 'Deploy to production'...")
+    print(remove_task(3))
+    display_tasks()
+
+    # Show final state
+    print("\n5. Final state - remaining tasks:")
+    remaining = list_all_tasks()
+    print(f"Total tasks: {len(remaining)}")
+    for task in remaining:
+        status = "✅ Completed" if task["completed"] else "❌ Pending"
+        print(f"  Task {task['id']}: {task['description']} - {status}")
+
+    print("\n🎉 Demo completed!")
+    print("\nThis demonstrates key monolithic characteristics:")
+    print("- All functions access the same global 'tasks' list")
+    print("- Direct function calls with no abstraction layers")
+    print("- Simple, tightly-coupled design")
+    print("- Everything in one file/module")
 
 
 if __name__ == "__main__":
-    print("🎯 Monolithic Architecture - Test-Driven Development Exercise")
+    print("🎯 Monolithic Architecture - Complete Solution")
     print()
 
-    # Show the TDD process
-    demo_tdd_process()
-
-    # Run the tests
+    # Run the tests to prove everything works
     success = run_tests()
 
-    if not success:
-        print("\n🚀 Ready to start? Here's your roadmap:")
-        print("1. Look at the failing tests to understand requirements")
-        print("2. Implement clear_all_tasks() first (simplest)")
-        print("3. Then add_task() - check test_add_task_creates_correct_structure")
-        print("4. Continue with list_all_tasks(), get_task_by_id(), etc.")
-        print("5. Run tests after each implementation: python3 this_file.py")
-        print()
-        print("Good luck! The tests will guide you! 🎉")
+    if success:
+        print("\n" + "=" * 60)
+        print("Would you like to see an interactive demo? (y/n): ", end="")
+        try:
+            response = input().strip().lower()
+            if response in ['y', 'yes']:
+                print()
+                interactive_demo()
+        except (KeyboardInterrupt, EOFError):
+            print("\n👋 Goodbye!")
+
+    print("\n📚 Learning Summary:")
+    print("✅ Test-Driven Development guides implementation")
+    print("✅ Tests serve as requirements and documentation")
+    print("✅ Monolithic architecture: simple but tightly coupled")
+    print("✅ Global state makes everything easily accessible")
+    print("✅ Perfect for small applications and rapid prototyping")

@@ -1,40 +1,27 @@
 """
-Layered Architecture Example: Library Management System (Test-Driven Development)
-===============================================================================
+Layered Architecture Example: Library Management System (Test-Driven Development) - SOLUTION
+==========================================================================================
 
-This is a Test-Driven Development (TDD) exercise demonstrating layered architecture.
-Your task is to make all the tests pass by implementing the required functions
-following the layered architecture pattern.
+This is the complete solution demonstrating layered architecture principles
+with proper separation of concerns and controlled layer communication.
 
-ARCHITECTURAL CHARACTERISTICS:
+ARCHITECTURAL CHARACTERISTICS DEMONSTRATED:
 - Clear separation of concerns across layers
 - Each layer only communicates with adjacent layers
 - Data flows through layers in a controlled manner
 - Business logic is isolated from data access and presentation
 - Each layer has a specific responsibility
+- Easier to test, maintain, and modify individual layers
 
-LAYERS IN THIS SYSTEM:
+LAYERS IMPLEMENTED:
 1. DATA ACCESS LAYER: Direct database/storage operations
 2. BUSINESS LOGIC LAYER: Core application rules and workflows
 3. PRESENTATION LAYER: User interface and input/output formatting
-
-TDD APPROACH:
-1. Read and understand the tests (they define the requirements)
-2. Run the tests (they will fail initially)
-3. Implement just enough code to make tests pass
-4. Follow layered architecture principles
-5. Repeat until all tests pass
-
-LEARNING OBJECTIVES:
-- Understand layered architecture characteristics and benefits
-- Practice proper layer separation and communication
-- Learn how layers isolate concerns and dependencies
-- See how business logic can be tested independently of UI/data
-- Experience how layered design improves maintainability
 """
 
 import unittest
 import sys
+from datetime import datetime
 
 # --- GLOBAL DATA STORAGE ---
 # In layered architecture, data storage is isolated in the data layer
@@ -45,192 +32,322 @@ transactions_db = []
 
 # --- DATA ACCESS LAYER ---
 # This layer handles all direct data storage operations
-# It should NOT contain business logic - only CRUD operations
+# It contains NO business logic - only CRUD operations
 
 def get_all_books():
     """
-    TODO: Implement this data access function.
-
-    Should return a copy of all books in the database.
-    Look at test_data_layer_get_all_books() for requirements.
+    Retrieves all books from the database.
+    Returns a copy to prevent external modification of internal data.
     """
-    pass
+    return books_db.copy()
 
 
 def get_book_by_id(book_id):
     """
-    TODO: Implement this data access function.
-
-    Should return a specific book by ID or None if not found.
-    Look at test_data_layer_get_book_by_id() for requirements.
+    Retrieves a specific book by its ID.
+    Returns None if book is not found.
     """
-    pass
+    return books_db.get(book_id, None)
 
 
 def save_book(book_id, book_data):
     """
-    TODO: Implement this data access function.
-
-    Should save/update a book in the database.
-    Look at test_data_layer_save_book() for requirements.
+    Saves/updates a book in the database.
+    Stores a copy to prevent external modification.
     """
-    pass
+    books_db[book_id] = book_data.copy()
 
 
 def get_user_borrowed_books(user_id):
     """
-    TODO: Implement this data access function.
-
-    Should return list of book IDs borrowed by a user.
-    Look at test_data_layer_user_books() for requirements.
+    Retrieves list of book IDs borrowed by a user.
+    Returns empty list if user has no borrowed books.
     """
-    pass
+    return users_db.get(user_id, []).copy()
 
 
 def save_user_borrowed_book(user_id, book_id):
     """
-    TODO: Implement this data access function.
-
-    Should record that a user has borrowed a book.
-    Look at test_data_layer_user_books() for requirements.
+    Records that a user has borrowed a book.
+    Initializes user record if it doesn't exist.
     """
-    pass
+    if user_id not in users_db:
+        users_db[user_id] = []
+    if book_id not in users_db[user_id]:
+        users_db[user_id].append(book_id)
 
 
 def remove_user_borrowed_book(user_id, book_id):
     """
-    TODO: Implement this data access function.
-
-    Should remove a book from user's borrowed list.
-    Look at test_data_layer_user_books() for requirements.
+    Removes a book from user's borrowed list.
+    Does nothing if user or book not found.
     """
-    pass
+    if user_id in users_db and book_id in users_db[user_id]:
+        users_db[user_id].remove(book_id)
 
 
 def log_transaction(user_id, book_id, action, timestamp):
     """
-    TODO: Implement this data access function.
-
-    Should record a transaction (borrow/return) in the transaction log.
-    Look at test_data_layer_transactions() for requirements.
+    Records a transaction in the transaction log.
     """
-    pass
+    transaction = {
+        "user_id": user_id,
+        "book_id": book_id,
+        "action": action,
+        "timestamp": timestamp
+    }
+    transactions_db.append(transaction)
 
 
 def clear_all_data():
     """
-    TODO: Implement this data access function.
-
-    Should clear all data from all databases (for testing).
+    Clears all data from all databases.
+    Used for testing and system reset.
     """
-    pass
+    global books_db, users_db, transactions_db
+    books_db.clear()
+    users_db.clear()
+    transactions_db.clear()
 
 
 # --- BUSINESS LOGIC LAYER ---
 # This layer contains all business rules and workflows
-# It should ONLY call data access layer functions (not directly access global data)
-# It should NOT handle user input/output (that's presentation layer)
+# It ONLY calls data access layer functions (never accesses global data directly)
+# It does NOT handle user input/output (that's presentation layer responsibility)
 
 def add_book_to_library(title, author, isbn, copies=1):
     """
-    TODO: Implement this business logic function.
+    Adds a new book to the library with business rule validation.
 
-    Should add a new book to the library with proper validation.
-    Must use data access layer functions only.
-    Look at test_business_layer_add_book() for requirements.
+    Business rules:
+    - Title and author cannot be empty
+    - Copies must be positive
+    - ISBN should be unique (simplified validation)
+    - Auto-generates book ID
     """
-    pass
+    # Validate input according to business rules
+    if not title or not title.strip():
+        return "Error: Book title cannot be empty"
+
+    if not author or not author.strip():
+        return "Error: Book author cannot be empty"
+
+    if copies <= 0:
+        return "Error: Number of copies must be positive"
+
+    # Generate new book ID (simple sequential ID)
+    all_books = get_all_books()
+    book_id = max(all_books.keys()) + 1 if all_books else 1
+
+    # Create book data structure
+    book_data = {
+        "title": title.strip(),
+        "author": author.strip(),
+        "isbn": isbn,
+        "total_copies": copies,
+        "available_copies": copies
+    }
+
+    # Save using data access layer
+    save_book(book_id, book_data)
+
+    return f"Book '{title}' added successfully with ID {book_id}"
 
 
 def is_book_available_for_borrowing(book_id):
     """
-    TODO: Implement this business logic function.
+    Checks if a book is available for borrowing.
 
-    Should check if a book can be borrowed (exists and has available copies).
-    Must use data access layer functions only.
-    Look at test_business_layer_availability() for requirements.
+    Business rules:
+    - Book must exist
+    - Book must have available copies > 0
     """
-    pass
+    book = get_book_by_id(book_id)  # Use data access layer
+    return book is not None and book.get("available_copies", 0) > 0
 
 
 def borrow_book_workflow(user_id, book_id):
     """
-    TODO: Implement this business logic function.
+    Handles the complete borrowing workflow.
 
-    Should handle the complete borrowing workflow with business rules.
-    Must use data access layer functions only.
-    Look at test_business_layer_borrow() for requirements.
+    Business rules:
+    - Book must be available
+    - User cannot borrow the same book twice
+    - Update available copies
+    - Log the transaction
     """
-    pass
+    # Check if book is available
+    if not is_book_available_for_borrowing(book_id):
+        return "Error: Book is not available for borrowing"
+
+    # Check if user already has this book
+    user_books = get_user_borrowed_books(user_id)
+    if book_id in user_books:
+        return "Error: You have already borrowed this book"
+
+    # Get book details for transaction
+    book = get_book_by_id(book_id)
+
+    # Update available copies
+    book["available_copies"] -= 1
+    save_book(book_id, book)
+
+    # Record user borrowed the book
+    save_user_borrowed_book(user_id, book_id)
+
+    # Log transaction
+    timestamp = datetime.now().isoformat()
+    log_transaction(user_id, book_id, "borrow", timestamp)
+
+    return f"Book '{book['title']}' borrowed successfully!"
 
 
 def return_book_workflow(user_id, book_id):
     """
-    TODO: Implement this business logic function.
+    Handles the complete return workflow.
 
-    Should handle the complete return workflow with validation.
-    Must use data access layer functions only.
-    Look at test_business_layer_return() for requirements.
+    Business rules:
+    - User must have borrowed the book
+    - Update available copies
+    - Log the transaction
     """
-    pass
+    # Check if user has borrowed this book
+    user_books = get_user_borrowed_books(user_id)
+    if book_id not in user_books:
+        return "Error: You have not borrowed this book"
+
+    # Get book details
+    book = get_book_by_id(book_id)
+    if book is None:
+        return "Error: Book not found in system"
+
+    # Update available copies
+    book["available_copies"] += 1
+    save_book(book_id, book)
+
+    # Remove from user's borrowed list
+    remove_user_borrowed_book(user_id, book_id)
+
+    # Log transaction
+    timestamp = datetime.now().isoformat()
+    log_transaction(user_id, book_id, "return", timestamp)
+
+    return f"Book '{book['title']}' returned successfully!"
 
 
 def get_user_borrowed_books_with_details(user_id):
     """
-    TODO: Implement this business logic function.
-
-    Should return detailed info about books borrowed by a user.
-    Must use data access layer functions only.
-    Look at test_business_layer_user_details() for requirements.
+    Returns detailed information about books borrowed by a user.
+    Enriches book IDs with full book details.
     """
-    pass
+    user_book_ids = get_user_borrowed_books(user_id)
+    detailed_books = []
+
+    for book_id in user_book_ids:
+        book = get_book_by_id(book_id)
+        if book:
+            detailed_book = book.copy()
+            detailed_book["book_id"] = book_id
+            detailed_books.append(detailed_book)
+
+    return detailed_books
 
 
 def get_available_books_list():
     """
-    TODO: Implement this business logic function.
-
-    Should return list of books that are available for borrowing.
-    Must use data access layer functions only.
-    Look at test_business_layer_available_books() for requirements.
+    Returns list of all books that are available for borrowing.
+    Applies business rule of available_copies > 0.
     """
-    pass
+    all_books = get_all_books()
+    available_books = []
+
+    for book_id, book in all_books.items():
+        if book.get("available_copies", 0) > 0:
+            book_copy = book.copy()
+            book_copy["book_id"] = book_id
+            available_books.append(book_copy)
+
+    return available_books
 
 
 # --- PRESENTATION LAYER ---
 # This layer handles user interface, input validation, and output formatting
-# It should ONLY call business logic layer functions (not data access directly)
+# It ONLY calls business logic layer functions (never data access directly)
 
 def format_book_display(books_list):
     """
-    TODO: Implement this presentation function.
-
-    Should format a list of books for display to users.
-    Must use business logic layer functions only.
-    Look at test_presentation_layer_formatting() for requirements.
+    Formats a list of books for display to users.
+    Creates user-friendly output with proper formatting.
     """
-    pass
+    if not books_list:
+        return "No books available."
+
+    output = "📚 Library Books:\n"
+    output += "=" * 60 + "\n"
+
+    for book in books_list:
+        book_id = book.get("book_id", "N/A")
+        title = book.get("title", "Unknown Title")
+        author = book.get("author", "Unknown Author")
+        available = book.get("available_copies", 0)
+
+        availability_status = f"✅ {available} available" if available > 0 else "❌ Not available"
+
+        output += f"[{book_id}] {title}\n"
+        output += f"     by {author}\n"
+        output += f"     {availability_status}\n"
+        output += "-" * 40 + "\n"
+
+    return output
 
 
 def parse_user_input(input_string, expected_type):
     """
-    TODO: Implement this presentation function.
-
-    Should parse and validate user input.
-    Look at test_presentation_layer_input_parsing() for requirements.
+    Parses and validates user input according to expected type.
+    Returns None for invalid input.
     """
-    pass
+    if input_string is None:
+        return None
+
+    # Strip whitespace
+    cleaned_input = input_string.strip()
+
+    if expected_type == str:
+        return cleaned_input if cleaned_input else None
+
+    elif expected_type == int:
+        try:
+            return int(cleaned_input)
+        except ValueError:
+            return None
+
+    return None
 
 
 def display_user_borrowed_books(user_id):
     """
-    TODO: Implement this presentation function.
-
-    Should display a user's borrowed books in a formatted way.
-    Must use business logic layer functions only.
-    Look at test_presentation_layer_user_display() for requirements.
+    Displays a user's borrowed books in a formatted way.
+    Uses business logic layer to get data.
     """
-    pass
+    # Get detailed book information from business layer
+    user_books = get_user_borrowed_books_with_details(user_id)
+
+    if not user_books:
+        return f"📚 User '{user_id}' has no books currently borrowed."
+
+    output = f"📚 Books borrowed by '{user_id}':\n"
+    output += "=" * 50 + "\n"
+
+    for book in user_books:
+        title = book.get("title", "Unknown Title")
+        author = book.get("author", "Unknown Author")
+        book_id = book.get("book_id", "N/A")
+
+        output += f"[{book_id}] {title}\n"
+        output += f"     by {author}\n"
+        output += "-" * 30 + "\n"
+
+    return output
 
 
 # --- TEST SUITE ---
@@ -671,6 +788,7 @@ def run_tests():
         print("✅ Controlled communication between layers")
         print("✅ Business logic isolated from data and UI")
         print("✅ Easier to test and maintain")
+        print("✅ Changes in one layer don't affect others")
     else:
         print(f"❌ {len(result.failures)} test(s) failed, {len(result.errors)} error(s)")
         print()
@@ -686,23 +804,78 @@ def run_tests():
     return result.wasSuccessful()
 
 
+def interactive_demo():
+    """
+    Interactive demo showing the layered architecture in action.
+    """
+    print("🚀 Interactive Demo - Layered Architecture Library System")
+    print("=" * 60)
+
+    clear_all_data()
+
+    print("\n1. DATA ACCESS LAYER - Adding books directly to database:")
+    save_book(1, {
+        "title": "The Great Gatsby",
+        "author": "F. Scott Fitzgerald",
+        "isbn": "978-0-7432-7356-5",
+        "total_copies": 2,
+        "available_copies": 2
+    })
+    print("✅ Book saved directly to database")
+
+    print("\n2. BUSINESS LOGIC LAYER - Adding book with validation:")
+    result = add_book_to_library("1984", "George Orwell", "978-0-452-28423-4", 1)
+    print(f"✅ {result}")
+
+    print("\n3. PRESENTATION LAYER - Formatting available books:")
+    available_books = get_available_books_list()
+    formatted_display = format_book_display(available_books)
+    print(formatted_display)
+
+    print("\n4. COMPLETE WORKFLOW - Borrowing through all layers:")
+    print("   📊 Data Layer: Checking book availability...")
+    book_exists = get_book_by_id(1) is not None
+    print(f"   Book exists in database: {book_exists}")
+
+    print("   🧠 Business Layer: Processing borrow request...")
+    borrow_result = borrow_book_workflow("demo_user", 1)
+    print(f"   {borrow_result}")
+
+    print("   🖥️  Presentation Layer: Displaying user's books...")
+    user_display = display_user_borrowed_books("demo_user")
+    print(user_display)
+
+    print("\n5. LAYER SEPARATION DEMONSTRATED:")
+    print("   ✅ Data layer: Direct database operations")
+    print("   ✅ Business layer: Called data layer functions only")
+    print("   ✅ Presentation layer: Called business layer functions only")
+    print("   ✅ Clean separation of concerns maintained")
+
+    print("\n🎉 Demo completed!")
+
+
 if __name__ == "__main__":
-    print("🎯 Layered Architecture - Test-Driven Development Exercise")
-    print()
-    print("📚 Layer Responsibilities:")
-    print("📊 DATA ACCESS: get_all_books(), save_book(), log_transaction(), etc.")
-    print("🧠 BUSINESS LOGIC: add_book_to_library(), borrow_book_workflow(), etc.")
-    print("🖥️  PRESENTATION: format_book_display(), parse_user_input(), etc.")
+    print("🎯 Layered Architecture - Complete Solution")
     print()
 
-    # Run the tests
+    # Run the tests to prove everything works
     success = run_tests()
 
-    if not success:
-        print("\n🚀 Implementation Strategy:")
-        print("1. Start with Data Access Layer (simplest CRUD operations)")
-        print("2. Move to Business Logic Layer (use only data access functions)")
-        print("3. Finish with Presentation Layer (use only business logic functions)")
-        print("4. Run tests frequently to verify layer separation")
-        print()
-        print("Remember: Each layer should only communicate with adjacent layers!")
+    if success:
+        print("\n" + "=" * 70)
+        print("Would you like to see an interactive demo? (y/n): ", end="")
+        try:
+            response = input().strip().lower()
+            if response in ['y', 'yes']:
+                print()
+                interactive_demo()
+        except (KeyboardInterrupt, EOFError):
+            print("\n👋 Goodbye!")
+
+    print("\n📚 Layered Architecture Learning Summary:")
+    print("✅ Separation of concerns across layers")
+    print("✅ Each layer has single responsibility")
+    print("✅ Controlled communication between adjacent layers")
+    print("✅ Business logic isolated from data access and UI")
+    print("✅ Easier to test, maintain, and modify")
+    print("✅ Changes in one layer don't ripple through others")
