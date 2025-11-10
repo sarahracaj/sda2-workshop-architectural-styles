@@ -127,7 +127,7 @@ def clear_all_tasks():
 def clear_all_tasks():
     global tasks
     tasks.clear()
-    
+
     pass
 
 
