@@ -41,19 +41,29 @@ tasks = []
 def add_task(description, priority):
     """
     TODO: Implement this function to make the tests pass.
-
-    The tests will tell you exactly what this function should do.
-    Look at test_add_task() to understand the requirements.
-    """
+"""
+    task_id = len(tasks) + 1
+    task = {
+        "id": task_id,
+        "description": description,
+        "priority": priority,
+        "completed": False
+    }
+    tasks.append(task)
+    return f"Task {task_id} added."
     pass
+
+
 
 
 def list_all_tasks():
     """
     TODO: Implement this function to make the tests pass.
-
     Look at test_list_all_tasks() to understand the requirements.
     """
+   
+    return sorted(tasks, key=lambda task: task["priority"])
+
     pass
 
 
@@ -63,6 +73,17 @@ def mark_task_done(task_id):
 
     Look at test_mark_task_done() to understand the requirements.
     """
+
+    task = get_task_by_id(task_id)
+    if task is None:
+        return f"Task {task_id} not found."
+    
+    if task["completed"]:
+        return f"Task {task_id} is already completed."
+    
+    task["completed"] = True
+    return f"Task {task_id} marked as completed."
+
     pass
 
 
@@ -72,24 +93,14 @@ def remove_task(task_id):
 
     Look at test_remove_task() to understand the requirements.
     """
-    pass
 
-
-def get_task_by_id(task_id):
+    global tasks
+    tasks.clear()
+    return "All tasks cleared."
+tasks.
     """
-    TODO: Implement this helper function to make the tests pass.
-
-    Look at test_get_task_by_id() to understand the requirements.
-    """
-    pass
 
 
-def clear_all_tasks():
-    """
-    TODO: Implement this function to make the tests pass.
-
-    This is used for testing - it should remove all tasks.
-    """
     pass
 
 
