@@ -124,6 +124,9 @@ def clear_all_tasks():
 
     This is used for testing - it should remove all tasks.
     """
+    def clear_all_tasks():
+    global tasks
+    tasks.clear()   # oder: tasks = []
     pass
 
 
