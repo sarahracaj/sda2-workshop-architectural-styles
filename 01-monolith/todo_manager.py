@@ -95,12 +95,35 @@ def remove_task(task_id):
     """
 
     global tasks
-    tasks.clear()
-    return "All tasks cleared."
-tasks.
+    task = get_task_by_id(task_id)
+    if task is None:
+        return f"Task {task_id} not found."
+    
+    tasks.remove(task)
+    return f"Task {task_id} removed."
+    pass
+
+
+def get_task_by_id(task_id):
+    """
+    TODO: Implement this helper function to make the tests pass.
+
+    Look at test_get_task_by_id() to understand the requirements.
     """
 
+    for task in tasks:
+        if task["id"] == task_id:
+            return task
+    return None
+    pass
 
+
+def clear_all_tasks():
+    """
+    TODO: Implement this function to make the tests pass.
+
+    This is used for testing - it should remove all tasks.
+    """
     pass
 
 
